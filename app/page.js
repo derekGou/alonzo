@@ -231,12 +231,7 @@ export default function Home() {
             orientation="vertical"
           />
           <Link
-            href={{
-              pathname: '/',
-              query: {
-                loggedOut: 'loggedOut',
-              },
-            }}
+            href='/logout'
           >Log Out</Link>
         </Stack>
       </Stack>
