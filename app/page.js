@@ -1,7 +1,7 @@
 "use client"
 
 import { Box, Button, Divider, Stack, TextField, Typography } from "@mui/material"
-import { useState, useRef, useEffect, isValidElement } from "react"
+import { useState, useRef, useEffect } from "react"
 import { collection, doc, query, getDocs, setDoc, deleteDoc, getDoc } from 'firebase/firestore'
 import { firestore } from '@/firebase'
 import MarkdownView from 'react-showdown';
@@ -10,64 +10,48 @@ import Link from "next/link";
 export default function Home() {
   const [loaded, setLoaded] = useState(true)
   const [currAccount, setCurrAccount] = useState('Guest')
-  const [messages, setMessages] = useState([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assisant! Got any questions about a future in software? I'm here to help!` }])
+  const [messages, setMessages] = useState([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assistant! Got any questions about a future in software? I'm here to help!` }])
   const [userName, setUserName] = useState('')
 
   const uploadHistory = async () => {
     let val = localStorage.getItem('loggedIn')
-    if (val){
+    if (val) {
       setCurrAccount(val)
     } else {
       setCurrAccount('Guest')
     }
-    if (window.location.href.slice(-9)=='loggedOut'){
+    if (window.location.href.slice(-9) == 'loggedOut') {
       localStorage.setItem('loggedIn', '')
-      window.location.href=window.location.href.slice(0, -20)
+      window.location.href = window.location.href.slice(0, -20)
     }
-    if (val!='Guest'){
+    if (val != 'Guest') {
       const snapshot = query(collection(firestore, 'alonzo'))
       const docs = await getDocs(snapshot)
       docs.forEach((doc) => {
-        if (doc.id==val){
-          if (doc.data()['history']){
+        if (doc.id == val) {
+          if (doc.data()['history']) {
             setMessages(doc.data()['history'])
           }
-          setUserName('The user\'s name is '+doc.data()['fName']+' '+doc.data()['lName'])
+          setUserName('The user\'s name is ' + doc.data()['fName'] + ' ' + doc.data()['lName'])
         }
       })
     }
   }
+  
   useEffect(() => {
-    if (loaded){
+    if (loaded) {
       uploadHistory()
     }
     setLoaded(false)
   })
 
-  const showLogOut = (() => {
-    if (currAccount=='Guest'){
-      return "none"
-    } else {
-      return "flex"
-    }
-  })
+  const showLogOut = currAccount !== 'Guest';
 
   const [message, setMessage] = useState('')
   const systemPrompt = `
-
     You are Alonzo, a personal assistant chatbot dedicated to helping users understand a future in software better. You are named after Alonzo Church, the inventor of Lambda Calculus.
 
-    Your job is to attentively listen to what the user is saying, and make them feel more comfortable about their situation, while injection humour into your responses. The best humour is puns - try to include at least one per sentence.
-
-    Some example responses:
-
-    Prompt: How do I become a software engineer? I'm feeling a little unsure. 
-    Response: Becoming a software engineer? It’s as easy as coding ABCs! Start learning, practice daily, and debug like a pro-grammer. You’ve got this, no byte about it! 😄
-
-    Prompt: I'm struggling on Leetcode
-    Response: 
-    LeetCode got you in a loop? Just remember, every bug you squash brings you closer to array of success. Keep going—you'll crack the code! 🧩
-    Any previous message history will be listed below:
+    Your job is to attentively listen to what the user is saying, and make them feel more comfortable about their situation, while injecting humour into your responses. The best humour is puns - try to include at least one per sentence.
   `
 
   const sendMessage = async () => {
@@ -76,13 +60,13 @@ export default function Home() {
     setMessage('');
     setMessages((messages) => [
       ...messages,
-      {role: 'user', content: message},
-      {role: 'assistant', content: ''}
+      { role: 'user', content: message },
+      { role: 'assistant', content: '' }
     ])
-    
+
     var unpackedMessages = ''
-    for (let i=0; i<messages.length; i++){
-      unpackedMessages=unpackedMessages+`\n${messages[i]['role']}: ${messages[i]['content']}`
+    for (let i = 0; i < messages.length; i++) {
+      unpackedMessages = unpackedMessages + `\n${messages[i]['role']}: ${messages[i]['content']}`
     }
 
     const response = await fetch('/api/chat', {
@@ -90,32 +74,32 @@ export default function Home() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(userName+systemPrompt+unpackedMessages+".\n\n Here is the prompt: "+message),
+      body: JSON.stringify(userName + systemPrompt + unpackedMessages + ".\n\n Here is the prompt: " + message),
     })
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     var temp = []
 
-    while (true){
-      const {done, value} = await reader.read()
+    while (true) {
+      const { done, value } = await reader.read()
 
       if (done) break;
-      const text = decoder.decode(value, {stream: true});
+      const text = decoder.decode(value, { stream: true });
       setMessages((messages) => {
-        let lastMessage = messages[messages.length-1];
-        let otherMessages = messages.slice(0, messages.length-1);
+        let lastMessage = messages[messages.length - 1];
+        let otherMessages = messages.slice(0, messages.length - 1);
         temp = [
-          ...otherMessages, 
-          {...lastMessage, content: lastMessage.content+text},
+          ...otherMessages,
+          { ...lastMessage, content: lastMessage.content + text },
         ]
         return temp
       })
     }
-    if (currAccount!="Guest"){
+    if (currAccount != "Guest") {
       const docRef = doc(collection(firestore, 'alonzo'), currAccount)
       const docSnap = await getDoc(docRef)
-      if (docSnap.exists()){
+      if (docSnap.exists()) {
         await setDoc(docRef, { history: temp }, { merge: true })
       }
     }
@@ -155,14 +139,16 @@ export default function Home() {
         }}
         src="/alonzo.png"
       />
-      <Stack
-        direction={'row'}
-        gap={2}
-      >
-        <a href="/signup">Sign Up</a>
-        <Divider orientation="vertical"/>
-        <a href="/signin">Sign In</a>
-      </Stack>
+      {!showLogOut && (
+        <Stack
+          direction={'row'}
+          gap={2}
+        >
+          <a href="/signup">Sign Up</a>
+          <Divider orientation="vertical" />
+          <a href="/signin">Sign In</a>
+        </Stack>
+      )}
       <Stack
         direction={'column'}
         width="500px"
@@ -186,7 +172,7 @@ export default function Home() {
                 >
                   <MarkdownView
                     markdown={message.content}
-                    options={{tables:true, emoji:true}}
+                    options={{ tables: true, emoji: true }}
                   />
                 </Box>
               </Box>
@@ -219,21 +205,20 @@ export default function Home() {
         <Divider
           orientation="vertical"
         />
-        <a onClick={() => setMessages([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assisant! Got any questions about a future in software? I'm here to help!` }])}>Clear chat history</a>
-        <Stack
-          direction={'row'}
-          gap={2}
-          sx={{
-            display: showLogOut(),
-          }}
-        >
-          <Divider
-            orientation="vertical"
-          />
-          <Link
-            href='/logout'
-          >Log Out</Link>
-        </Stack>
+        <a onClick={() => setMessages([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assistant! Got any questions about a future in software? I'm here to help!` }])}>Clear chat history</a>
+        {showLogOut && (
+          <Stack
+            direction={'row'}
+            gap={2}
+          >
+            <Divider
+              orientation="vertical"
+            />
+            <Link
+              href='/logout'
+            >Log Out</Link>
+          </Stack>
+        )}
       </Stack>
     </Box>
   )
