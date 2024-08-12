@@ -5,14 +5,12 @@ import { useState, useRef, useEffect, isValidElement } from "react"
 import { collection, doc, query, getDocs, setDoc, deleteDoc, getDoc } from 'firebase/firestore'
 import { firestore } from '@/firebase'
 import MarkdownView from 'react-showdown';
-// import Link from '@mui/material/Link';
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
 export default function Home() {
   const [loaded, setLoaded] = useState(true)
   const [currAccount, setCurrAccount] = useState('Guest')
-  const logOut = useSearchParams().get('loggedOut')
+  const logOut = window.location.href.slice(-9)
   const [messages, setMessages] = useState([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assisant! Got any questions about a future in software? I'm here to help!` }])
   const [userName, setUserName] = useState('')
 
