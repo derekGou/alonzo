@@ -14,6 +14,7 @@ export default function Home() {
   const [currAccount, setCurrAccount] = useState('Guest')
   const logOut = useSearchParams().get('loggedOut')
   const [messages, setMessages] = useState([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assisant! Got any questions about a future in software? I'm here to help!` }])
+  const [userName, setUserName] = useState('')
 
   const uploadHistory = async () => {
     let val = localStorage.getItem('loggedIn')
@@ -34,6 +35,7 @@ export default function Home() {
           if (doc.data()['history']){
             setMessages(doc.data()['history'])
           }
+          setUserName('The user\'s name is '+doc.data()['fName']+' '+doc.data()['lName'])
         }
       })
     }
@@ -55,6 +57,7 @@ export default function Home() {
 
   const [message, setMessage] = useState('')
   const systemPrompt = `
+
     You are Alonzo, a personal assistant chatbot dedicated to helping users understand a future in software better. You are named after Alonzo Church, the inventor of Lambda Calculus.
 
     Your job is to attentively listen to what the user is saying, and make them feel more comfortable about their situation, while injection humour into your responses. The best humour is puns - try to include at least one per sentence.
@@ -90,7 +93,7 @@ export default function Home() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(systemPrompt+unpackedMessages+".\n\n Here is the prompt: "+message),
+      body: JSON.stringify(userName+systemPrompt+unpackedMessages+".\n\n Here is the prompt: "+message),
     })
 
     const reader = response.body.getReader();
@@ -216,6 +219,10 @@ export default function Home() {
         gap={2}
       >
         <p>Logged in as {currAccount}</p>
+        <Divider
+          orientation="vertical"
+        />
+        <a onClick={() => setMessages([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assisant! Got any questions about a future in software? I'm here to help!` }])}>Clear chat history</a>
         <Stack
           direction={'row'}
           gap={2}
