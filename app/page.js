@@ -10,7 +10,6 @@ import Link from "next/link";
 export default function Home() {
   const [loaded, setLoaded] = useState(true)
   const [currAccount, setCurrAccount] = useState('Guest')
-  const logOut = window.location.href.slice(-9)
   const [messages, setMessages] = useState([{ role: 'assistant', content: `Hello! I'm Alonzo, your personal assisant! Got any questions about a future in software? I'm here to help!` }])
   const [userName, setUserName] = useState('')
 
@@ -21,7 +20,7 @@ export default function Home() {
     } else {
       setCurrAccount('Guest')
     }
-    if (logOut=='loggedOut'){
+    if (window.location.href.slice(-9)=='loggedOut'){
       localStorage.setItem('loggedIn', '')
       window.location.href=window.location.href.slice(0, -20)
     }
