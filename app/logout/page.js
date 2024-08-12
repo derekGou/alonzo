@@ -7,9 +7,12 @@ import { firestore } from '@/firebase'
 import MarkdownView from 'react-showdown';
 import Link from "next/link";
 
-export default function Home() {
-    localStorage.setItem('loggedIn', '')
-    window.location.href=window.location.href.slice(0, -7)
+export default function logOut() {
+    const logOut = async () => {
+        localStorage.setItem('loggedIn', '')
+        window.location.href=window.location.href.slice(0, -7)
+    }
+    logOut()
     return (
         <Box
         width="100vw"
